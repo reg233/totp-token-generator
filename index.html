@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>TOTP Token Generator</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        height: 100%;
+        justify-content: center;
+        margin: 0;
+      }
+
+      #loader {
+        animation: rotation 1s linear infinite;
+        border: 4px solid #007fff;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: inline-block;
+        height: 48px;
+        width: 48px;
+      }
+
+      @keyframes rotation {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      #main {
+        align-items: center;
+        display: none;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      #token {
+        color: #007fff;
+        font-size: 64px;
+        font-weight: bold;
+        letter-spacing: 4px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 40px;
+      }
+
+      #progressbar {
+        height: 40px;
+        width: 40px;
+      }
+
+      .progressbar-text {
+        color: #666 !important;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      button {
+        align-items: center;
+        background-color: #eee;
+        border: none;
+        border-radius: 20px;
+        color: #007fff;
+        cursor: pointer;
+        display: flex;
+        font-size: 16px;
+        height: 40px;
+        justify-content: center;
+        padding: 0;
+        width: 40px;
+      }
+
+      #copied {
+        color: #666;
+        visibility: hidden;
+      }
+
+      .help {
+        color: #333;
+        display: none;
+        padding: 16px;
+        text-align: center;
+        word-break: break-word;
+      }
+
+      a {
+        background-color: transparent;
+        color: #007fff;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      #btn-main {
+        display: none;
+      }
+
+      #btn-main,
+      #btn-help {
+        font-size: 18px;
+        inset-inline-end: 16px;
+        position: absolute;
+        top: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loader"></div>
+    <div id="main">
+      <div id="token"></div>
+      <div class="actions">
+        <div id="progressbar"></div>
+        <button id="copy" title="Copy">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="1em"
+            height="1em"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M19 21H8V7h11m0-2H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-3-4H4a2 2 0 0 0-2 2v14h2V3h12z"
+            />
+          </svg>
+        </button>
+      </div>
+      <div id="copied">Copied!</div>
+    </div>
+    <div id="help" class="help">
+      <div>
+        Available URL Search Params: secret(required), algorithm, digits, period
+      </div>
+      <br />
+      <div>Example: <a id="example"></a></div>
+      <br />
+      <div>Full Example: <a id="full-example"></a></div>
+    </div>
+    <button id="btn-main">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="1em"
+        height="1em"
+        viewBox="0 0 1024 1024"
+      >
+        <path
+          fill="currentColor"
+          d="M872 394c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8H708V152c0-4.4-3.6-8-8-8h-64c-4.4 0-8 3.6-8 8v166H400V152c0-4.4-3.6-8-8-8h-64c-4.4 0-8 3.6-8 8v166H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h168v236H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h168v166c0 4.4 3.6 8 8 8h64c4.4 0 8-3.6 8-8V706h228v166c0 4.4 3.6 8 8 8h64c4.4 0 8-3.6 8-8V706h164c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8H708V394zM628 630H400V394h228z"
+        />
+      </svg>
+    </button>
+    <button id="btn-help">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="1em"
+        height="1em"
+        viewBox="0 0 24 24"
+      >
+        <path
+          fill="currentColor"
+          d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67c-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08c.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6"
+        />
+      </svg>
+    </button>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.3.2/otpauth.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.1.1/progressbar.min.js"></script>
+  <script>
+    const loaderElement = document.getElementById("loader");
+    const mainElement = document.getElementById("main");
+    const helpElement = document.getElementById("help");
+    const btnMainElement = document.getElementById("btn-main");
+    const btnHelpElement = document.getElementById("btn-help");
+    const exampleElement = document.getElementById("example");
+    const fullExampleElement = document.getElementById("full-example");
+
+    try {
+      const tokenElement = document.getElementById("token");
+      const copiedElement = document.getElementById("copied");
+
+      const params = new URLSearchParams(window.location.search);
+      let secret = params.get("secret");
+      if (secret) {
+        secret = decodeURIComponent(secret).replace(/\s/g, "");
+      }
+      const totp = new OTPAuth.TOTP({
+        algorithm: params.get("algorithm") || "SHA1",
+        digits: params.get("digits") || 6,
+        period: params.get("period") || 30,
+        secret: secret || undefined,
+      });
+
+      const progressBar = new ProgressBar.Circle("#progressbar", {
+        color: "#007fff",
+        step: function (state, circle) {
+          var value = Math.round(circle.value() * totp.period);
+          if (value === 0) {
+            circle.setText("");
+          } else {
+            circle.setText(value);
+          }
+        },
+        strokeWidth: 8,
+        trailColor: "#eee",
+        trailWidth: 8,
+      });
+
+      const setData = () => {
+        const token = totp.generate();
+        if (tokenElement.innerText !== token) {
+          tokenElement.innerText = token;
+        }
+
+        const period = totp.period;
+        const seconds = period - (Math.floor(Date.now() / 1000) % period);
+        progressBar.animate(seconds / period, { duration: 1000 });
+
+        setTimeout(setData, 1000);
+      };
+
+      setData();
+
+      document.getElementById("copy").addEventListener("click", () => {
+        if (copiedElement.style.visibility !== "visible") {
+          navigator.clipboard.writeText(totp.generate());
+          copiedElement.style.visibility = "visible";
+          setTimeout(() => {
+            copiedElement.style.visibility = "hidden";
+          }, 1000);
+        }
+      });
+    } catch (error) {
+      mainElement.classList.add("help");
+      mainElement.innerText = "Sorry, something went wrong.";
+    } finally {
+      loaderElement.style.display = "none";
+      mainElement.style.display = "flex";
+    }
+
+    const url = new URL(window.location.origin);
+    url.searchParams.set("secret", "23XW7Z22J3FOU5CET6STSNKY3OQRQCYZ");
+    exampleElement.href = url;
+    exampleElement.innerText = url;
+    url.searchParams.set("algorithm", "SHA1");
+    url.searchParams.set("digits", "6");
+    url.searchParams.set("period", "30");
+    fullExampleElement.href = url;
+    fullExampleElement.innerText = url;
+
+    btnMainElement.addEventListener("click", () => {
+      btnMainElement.style.display = "none";
+      btnHelpElement.style.display = "flex";
+      mainElement.style.display = "flex";
+      helpElement.style.display = "none";
+    });
+
+    btnHelpElement.addEventListener("click", () => {
+      btnMainElement.style.display = "flex";
+      btnHelpElement.style.display = "none";
+      mainElement.style.display = "none";
+      helpElement.style.display = "block";
+    });
+  </script>
+</html>
