@@ -6,6 +6,12 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>TOTP Token Generator</title>
     <style>
+      :root {
+        --primary-color: #007fff;
+        --color-fg-default: #1f2328;
+        --color-neutral-muted: rgba(175, 184, 193, 0.2);
+      }
+
       * {
         box-sizing: border-box;
       }
@@ -23,7 +29,7 @@
 
       #loader {
         animation: rotation 1s linear infinite;
-        border: 4px solid #007fff;
+        border: 4px solid var(--primary-color);
         border-bottom-color: transparent;
         border-radius: 50%;
         display: inline-block;
@@ -49,7 +55,7 @@
       }
 
       #token {
-        color: #007fff;
+        color: var(--primary-color);
         font-size: 64px;
         font-weight: bold;
         letter-spacing: 4px;
@@ -66,17 +72,17 @@
       }
 
       .progressbar-text {
-        color: #666 !important;
+        color: var(--color-fg-default) !important;
         user-select: none;
         -webkit-user-select: none;
       }
 
       button {
         align-items: center;
-        background-color: #eee;
+        background-color: var(--color-neutral-muted);
         border: none;
         border-radius: 20px;
-        color: #007fff;
+        color: var(--primary-color);
         cursor: pointer;
         display: flex;
         font-size: 16px;
@@ -87,25 +93,61 @@
       }
 
       #copied {
-        color: #666;
+        color: var(--color-fg-default);
         visibility: hidden;
       }
 
       .help {
-        color: #333;
+        color: var(--color-fg-default);
         display: none;
+        font-size: 16px;
+        line-height: 1.5;
         padding: 16px;
-        text-align: center;
-        word-break: break-word;
+        word-wrap: break-word;
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
       }
 
-      a {
+      .help > :first-child {
+        margin-top: 0 !important;
+      }
+
+      .help > :last-child {
+        margin-bottom: 0 !important;
+      }
+
+      .help h3 {
+        font-size: 1.25em;
+        font-weight: var(--base-text-weight-semibold, 600);
+        line-height: 1.25;
+        margin-bottom: 16px;
+        margin-top: 24px;
+      }
+
+      .help p {
+        margin-bottom: 16px;
+        margin-top: 0;
+      }
+
+      .help code {
+        background-color: var(--color-neutral-muted);
+        border-radius: 6px;
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas,
+          Liberation Mono, monospace;
+        font-size: 85%;
+        margin: 0;
+        padding: 0.2em 0.4em;
+        white-space: break-spaces;
+      }
+
+      .help a {
         background-color: transparent;
-        color: #007fff;
+        color: var(--primary-color);
         text-decoration: none;
+        word-break: break-all;
       }
 
-      a:hover {
+      .help a:hover {
         text-decoration: underline;
       }
 
@@ -145,13 +187,28 @@
       <div id="copied">Copied!</div>
     </div>
     <div id="help" class="help">
-      <div>
-        Available URL Search Params: secret(required), algorithm, digits, period
-      </div>
-      <br />
-      <div>Example: <a id="example"></a></div>
-      <br />
-      <div>Full Example: <a id="full-example"></a></div>
+      <h3>URL Search Params</h3>
+      <p>
+        <code>secret</code> (required) , <code>algorithm</code> ,
+        <code>digits</code> , <code>period</code>
+      </p>
+      <h3>Example</h3>
+      <p>
+        <a id="example"></a>
+      </p>
+      <h3>Full Example</h3>
+      <p>
+        <a id="full-example"></a>
+      </p>
+      <h3>Source Code</h3>
+      <p>
+        <a
+          href="https://github.com/reg233/totp-token-generator"
+          target="_blank"
+        >
+          https://github.com/reg233/totp-token-generator
+        </a>
+      </p>
     </div>
     <button id="btn-main">
       <svg
@@ -180,8 +237,8 @@
       </svg>
     </button>
   </body>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.3.2/otpauth.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.1.1/progressbar.min.js"></script>
+  <script src="/otpauth.umd.min.js"></script>
+  <script src="/progressbar.min.js"></script>
   <script>
     const loaderElement = document.getElementById("loader");
     const mainElement = document.getElementById("main");
@@ -208,7 +265,7 @@
       });
 
       const progressBar = new ProgressBar.Circle("#progressbar", {
-        color: "#007fff",
+        color: "var(--primary-color)",
         step: function (state, circle) {
           var value = Math.round(circle.value() * totp.period);
           if (value === 0) {
@@ -218,7 +275,7 @@
           }
         },
         strokeWidth: 8,
-        trailColor: "#eee",
+        trailColor: "var(--color-neutral-muted)",
         trailWidth: 8,
       });
 
