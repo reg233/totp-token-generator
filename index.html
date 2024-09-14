@@ -237,103 +237,103 @@
         />
       </svg>
     </button>
-  </body>
-  <script src="/otpauth.umd.min.js"></script>
-  <script src="/progressbar.min.js"></script>
-  <script>
-    const loaderElement = document.getElementById("loader");
-    const mainElement = document.getElementById("main");
-    const helpElement = document.getElementById("help");
-    const btnMainElement = document.getElementById("btn-main");
-    const btnHelpElement = document.getElementById("btn-help");
-    const exampleElement = document.getElementById("example");
-    const fullExampleElement = document.getElementById("full-example");
+    <script src="/otpauth.umd.min.js"></script>
+    <script src="/progressbar.min.js"></script>
+    <script>
+      const loaderElement = document.getElementById("loader");
+      const mainElement = document.getElementById("main");
+      const helpElement = document.getElementById("help");
+      const btnMainElement = document.getElementById("btn-main");
+      const btnHelpElement = document.getElementById("btn-help");
+      const exampleElement = document.getElementById("example");
+      const fullExampleElement = document.getElementById("full-example");
 
-    try {
-      const tokenElement = document.getElementById("token");
-      const copiedElement = document.getElementById("copied");
+      try {
+        const tokenElement = document.getElementById("token");
+        const copiedElement = document.getElementById("copied");
 
-      const params = new URLSearchParams(window.location.search);
-      let secret = params.get("secret");
-      if (secret) {
-        secret = decodeURIComponent(secret).replace(/\s/g, "");
-      }
-      const totp = new OTPAuth.TOTP({
-        algorithm: params.get("algorithm") || "SHA1",
-        digits: params.get("digits") || 6,
-        period: params.get("period") || 30,
-        secret: secret || undefined,
-      });
+        const params = new URLSearchParams(window.location.search);
+        let secret = params.get("secret");
+        if (secret) {
+          secret = decodeURIComponent(secret).replace(/\s/g, "");
+        }
+        const totp = new OTPAuth.TOTP({
+          algorithm: params.get("algorithm") || "SHA1",
+          digits: params.get("digits") || 6,
+          period: params.get("period") || 30,
+          secret: secret || undefined,
+        });
 
-      const progressBar = new ProgressBar.Circle("#progressbar", {
-        color: "var(--primary-color)",
-        step: function (state, circle) {
-          var value = Math.round(circle.value() * totp.period);
-          if (value === 0) {
-            circle.setText("");
-          } else {
-            circle.setText(value);
+        const progressBar = new ProgressBar.Circle("#progressbar", {
+          color: "var(--primary-color)",
+          step: function (state, circle) {
+            var value = Math.round(circle.value() * totp.period);
+            if (value === 0) {
+              circle.setText("");
+            } else {
+              circle.setText(value);
+            }
+          },
+          strokeWidth: 8,
+          trailColor: "var(--color-neutral-muted)",
+          trailWidth: 8,
+        });
+
+        const setData = () => {
+          const token = totp.generate();
+          if (tokenElement.innerText !== token) {
+            tokenElement.innerText = token;
           }
-        },
-        strokeWidth: 8,
-        trailColor: "var(--color-neutral-muted)",
-        trailWidth: 8,
+
+          const period = totp.period;
+          const seconds = period - (Math.floor(Date.now() / 1000) % period);
+          progressBar.animate(seconds / period, { duration: 1000 });
+
+          setTimeout(setData, 1000);
+        };
+
+        setData();
+
+        document.getElementById("copy").addEventListener("click", () => {
+          if (copiedElement.style.visibility !== "visible") {
+            navigator.clipboard.writeText(totp.generate());
+            copiedElement.style.visibility = "visible";
+            setTimeout(() => {
+              copiedElement.style.visibility = "hidden";
+            }, 1000);
+          }
+        });
+      } catch (error) {
+        mainElement.classList.add("help");
+        mainElement.innerText = "Sorry, something went wrong.";
+      } finally {
+        loaderElement.style.display = "none";
+        mainElement.style.display = "flex";
+      }
+
+      const url = new URL(window.location.origin);
+      url.searchParams.set("secret", "23XW7Z22J3FOU5CET6STSNKY3OQRQCYZ");
+      exampleElement.href = url;
+      exampleElement.innerText = url;
+      url.searchParams.set("algorithm", "SHA1");
+      url.searchParams.set("digits", "6");
+      url.searchParams.set("period", "30");
+      fullExampleElement.href = url;
+      fullExampleElement.innerText = url;
+
+      btnMainElement.addEventListener("click", () => {
+        btnMainElement.style.display = "none";
+        btnHelpElement.style.display = "flex";
+        mainElement.style.display = "flex";
+        helpElement.style.display = "none";
       });
 
-      const setData = () => {
-        const token = totp.generate();
-        if (tokenElement.innerText !== token) {
-          tokenElement.innerText = token;
-        }
-
-        const period = totp.period;
-        const seconds = period - (Math.floor(Date.now() / 1000) % period);
-        progressBar.animate(seconds / period, { duration: 1000 });
-
-        setTimeout(setData, 1000);
-      };
-
-      setData();
-
-      document.getElementById("copy").addEventListener("click", () => {
-        if (copiedElement.style.visibility !== "visible") {
-          navigator.clipboard.writeText(totp.generate());
-          copiedElement.style.visibility = "visible";
-          setTimeout(() => {
-            copiedElement.style.visibility = "hidden";
-          }, 1000);
-        }
+      btnHelpElement.addEventListener("click", () => {
+        btnMainElement.style.display = "flex";
+        btnHelpElement.style.display = "none";
+        mainElement.style.display = "none";
+        helpElement.style.display = "block";
       });
-    } catch (error) {
-      mainElement.classList.add("help");
-      mainElement.innerText = "Sorry, something went wrong.";
-    } finally {
-      loaderElement.style.display = "none";
-      mainElement.style.display = "flex";
-    }
-
-    const url = new URL(window.location.origin);
-    url.searchParams.set("secret", "23XW7Z22J3FOU5CET6STSNKY3OQRQCYZ");
-    exampleElement.href = url;
-    exampleElement.innerText = url;
-    url.searchParams.set("algorithm", "SHA1");
-    url.searchParams.set("digits", "6");
-    url.searchParams.set("period", "30");
-    fullExampleElement.href = url;
-    fullExampleElement.innerText = url;
-
-    btnMainElement.addEventListener("click", () => {
-      btnMainElement.style.display = "none";
-      btnHelpElement.style.display = "flex";
-      mainElement.style.display = "flex";
-      helpElement.style.display = "none";
-    });
-
-    btnHelpElement.addEventListener("click", () => {
-      btnMainElement.style.display = "flex";
-      btnHelpElement.style.display = "none";
-      mainElement.style.display = "none";
-      helpElement.style.display = "block";
-    });
-  </script>
+    </script>
+  </body>
 </html>
